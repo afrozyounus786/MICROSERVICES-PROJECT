@@ -30,7 +30,7 @@ async function registerUser(req, res) {
       email,
       password: hash,
       fullName: { firstName, lastName },
-      role: role || "user", // default role is 'user'
+      role: role || "user",
     });
 
     const token = jwt.sign(
@@ -147,9 +147,99 @@ async function logoutUser(req, res) {
     message: "Logout successful",
   });
 }
+
+async function getUserAddresses(req, res) {
+  const id = req.user.id;
+
+  const user = await userModel.findById(id).select("addresses");
+
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found",
+    });
+  }
+
+  return res.status(200).json({
+    message: "User addresses fetched successfully",
+    addresses: user.addresses,
+  });
+}
+
+async function addUserAddress(req, res) {
+  const id = req.user.id;
+
+  const { street, city, state, zipCode, country } = req.body;
+
+  const user = await userModel.findByIdAndUpdate(
+    { id: id },
+    {
+      $push: {
+        addresses: {
+          street: req.body.street,
+          city: req.body.city,
+          state: req.body.state,
+          zipCode: req.body.zipCode,
+          country: req.body.country,
+        },
+      },
+    },
+    { new: true }
+  );
+
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found",
+    });
+  }
+  return res.status(200).json({
+    message: "Address added successfully",
+    addresses: user.addresses,
+  });
+}
+
+async function deleteUserAddress(req, res) {
+  const id = req.user.id;
+  const { addressId } = req.params;
+
+  if(!addressId){
+    return res.status(404).json({
+      message: "Address ID is required",
+    });
+  }
+
+  const user = await userModel.findByIdAndUpdate(
+    { id: id },
+    {
+      $pull: {
+        addresses: { _id: addressId },
+      },
+    },
+    { new: true }
+  );
+
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found",
+    });
+  }
+
+  const addressExists = user.addresses.some(addr=> addr._id.toString() === addressId);
+  if(addressExists){
+    return res.status(404).json({
+      message: "Address not found",
+    });
+  }
+  return res.status(200).json({
+    message: addressExists ? "Address not found" : "Address deleted successfully",
+    addresses: user.addresses,
+  });
+}
+
 module.exports = {
   registerUser,
   loginUser,
   getCurrentUser,
   logoutUser,
+  getUserAddresses,
+  addUserAddress,
 };
