@@ -32,7 +32,7 @@ const registerValidationRules = [
         .withMessage("Last name is required"),
     body("role")
         .optional()
-        .isIn(["user", "admin"])
+        .isIn(["user", "seller", "admin"])
         .withMessage("Role must be either 'user' or 'admin'"),
     respondWithValidateErrors
 ]

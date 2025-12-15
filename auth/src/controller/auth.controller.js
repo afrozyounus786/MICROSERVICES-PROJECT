@@ -242,4 +242,5 @@ module.exports = {
   logoutUser,
   getUserAddresses,
   addUserAddress,
+  deleteUserAddress,
 };
