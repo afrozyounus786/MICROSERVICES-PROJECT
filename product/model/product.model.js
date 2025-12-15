@@ -30,5 +30,7 @@ const productSchema = new mongoose.Schema({
         id: String
     }]
 })
+//use are indexing over title and description for text search it make search faster and we dont have give the exact match it will find the relevant results
+productSchema.index({ title: 'text', description: 'text' });
 
 module.exports = mongoose.model('Product', productSchema);
